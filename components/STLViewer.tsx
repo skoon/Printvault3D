@@ -24,10 +24,7 @@ const STLViewer: React.FC<STLViewerProps> = ({ filePath }) => {
     const container = containerRef.current;
 
       const initScene = () => {
-      console.log('[STLViewer] initScene called, container size:', container.clientWidth, 'x', container.clientHeight);
-      
       if (container.clientWidth === 0 || container.clientHeight === 0) {
-        console.log('[STLViewer] Container has no size, retrying...');
         requestAnimationFrame(initScene);
         return;
       }
@@ -89,10 +86,7 @@ const STLViewer: React.FC<STLViewerProps> = ({ filePath }) => {
           setLoading(true);
           setError(null);
 
-          console.log('[STLViewer] Loading file:', filePath);
-
           const buffer = await electronStorage.readFile(filePath);
-          console.log('[STLViewer] Buffer received:', buffer ? `${buffer.byteLength} bytes` : 'null');
           
           if (!buffer) {
             setError('Failed to read file');
@@ -104,7 +98,6 @@ const STLViewer: React.FC<STLViewerProps> = ({ filePath }) => {
 
           try {
             geometry = loader.parse(buffer);
-            console.log('[STLViewer] Geometry parsed, vertices:', geometry.attributes.position?.count);
           } catch (parseErr) {
             console.error('STL parse error:', parseErr);
             setError('Failed to parse STL file');
@@ -122,9 +115,12 @@ const STLViewer: React.FC<STLViewerProps> = ({ filePath }) => {
           const size = geometry.boundingBox!.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z);
           
-          const scaleX = (container.clientWidth * 0.8) / size.x;
-          const scaleY = (container.clientHeight * 0.8) / size.y;
-          const scale = Math.min(scaleX, scaleY, 1);
+          let scale = 1;
+          if (maxDim > 0 && size.x > 0 && size.y > 0) {
+            const scaleX = (container.clientWidth * 0.5) / size.x;
+            const scaleY = (container.clientHeight * 0.5) / size.y;
+            scale = Math.min(scaleX, scaleY, 1);
+          }
 
           const material = new THREE.MeshPhongMaterial({
             color: 0x6366f1,
@@ -135,7 +131,6 @@ const STLViewer: React.FC<STLViewerProps> = ({ filePath }) => {
           const mesh = new THREE.Mesh(geometry, material);
           mesh.scale.setScalar(scale);
           scene.add(mesh);
-          console.log('[STLViewer] Mesh added to scene');
 
           const box = new THREE.Box3().setFromObject(mesh);
           const boxSize = box.getSize(new THREE.Vector3());

@@ -48,7 +48,7 @@ const ModelDetailModal: React.FC<ModelDetailModalProps> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto p-8">
-          <div className="grid grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-2 gap-8 mb-8">
             <div className="space-y-4">
               <div>
                 <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Properties</h3>
@@ -67,8 +67,31 @@ const ModelDetailModal: React.FC<ModelDetailModalProps> = ({
                   </div>
                 </div>
               </div>
+              
+              {model.extension.toLowerCase() === '.stl' && (
+                <div className="mt-4 pt-4 border-t border-slate-800">
+                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                    Drag to rotate • Scroll to zoom • Right-click to pan
+                  </p>
+                </div>
+              )}
             </div>
 
+            <div>
+              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Preview</h3>
+              {isSTL ? (
+                <div className="h-full min-h-[300px]">
+                  <STLViewer key={fullPath} filePath={fullPath} />
+                </div>
+              ) : (
+                <div className="h-full min-h-[300px] bg-slate-800 rounded-lg flex items-center justify-center">
+                  <span className="text-xs text-slate-500">3D preview not available for {model.extension.toUpperCase()} files</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 mb-8">
             <div>
                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">AI Suggestions</h3>
                <button 
@@ -83,19 +106,6 @@ const ModelDetailModal: React.FC<ModelDetailModalProps> = ({
                <p className="text-[10px] text-slate-500 leading-relaxed italic">
                  Uses Gemini to analyze the filename and suggest categories like "Cosplay", "Tools", or "Decor".
                </p>
-            </div>
-
-            <div>
-              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Preview</h3>
-              {isSTL ? (
-                <div className="h-full min-h-[280px]">
-                  <STLViewer key={fullPath} filePath={fullPath} />
-                </div>
-              ) : (
-                <div className="h-full min-h-[280px] bg-slate-800 rounded-lg flex items-center justify-center">
-                  <span className="text-xs text-slate-500">3D preview not available for {model.extension.toUpperCase()} files</span>
-                </div>
-              )}
             </div>
           </div>
 

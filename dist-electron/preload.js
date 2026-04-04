@@ -1,13 +1,1 @@
-"use strict";
-const electron = require("electron");
-electron.contextBridge.exposeInMainWorld("electronAPI", {
-  pickDirectory: () => electron.ipcRenderer.invoke("pick-directory"),
-  scanDirectory: (path) => electron.ipcRenderer.invoke("scan-directory", path),
-  saveModels: (models) => electron.ipcRenderer.invoke("save-models", models),
-  loadModels: () => electron.ipcRenderer.invoke("load-models"),
-  saveRootPath: (path) => electron.ipcRenderer.invoke("save-root-path", path),
-  getRootPath: () => electron.ipcRenderer.invoke("get-root-path"),
-  saveApiKey: (key) => electron.ipcRenderer.invoke("save-api-key", key),
-  getApiKey: () => electron.ipcRenderer.invoke("get-api-key"),
-  readFile: (filePath) => electron.ipcRenderer.invoke("read-file", filePath)
-});
+"use strict";const e=require("electron");e.contextBridge.exposeInMainWorld("electronAPI",{pickDirectory:()=>e.ipcRenderer.invoke("pick-directory"),scanDirectory:r=>e.ipcRenderer.invoke("scan-directory",r),saveModels:r=>e.ipcRenderer.invoke("save-models",r),loadModels:()=>e.ipcRenderer.invoke("load-models"),saveRootPath:r=>e.ipcRenderer.invoke("save-root-path",r),getRootPath:()=>e.ipcRenderer.invoke("get-root-path"),saveApiKey:r=>e.ipcRenderer.invoke("save-api-key",r),getApiKey:()=>e.ipcRenderer.invoke("get-api-key"),readFile:r=>e.ipcRenderer.invoke("read-file",r)});
