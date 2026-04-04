@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
+import { fileURLToPath } from "url";
 import fs from "fs/promises";
 const DEFAULT_STATE = {
   models: [],
@@ -45,6 +46,8 @@ class Storage {
   }
 }
 const storage = new Storage();
+const __filename$1 = fileURLToPath(import.meta.url);
+const __dirname$1 = path.dirname(__filename$1);
 const isDev = !app.isPackaged;
 let mainWindow = null;
 function createWindow() {
@@ -54,7 +57,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname$1, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false
     }
