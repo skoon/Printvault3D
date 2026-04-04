@@ -8,12 +8,11 @@ export interface PrintModel {
   lastModified: number;
   tags: string[];
   directoryTags: string[];
-  handle?: FileSystemFileHandle;
   description?: string;
 }
 
 export interface LibraryState {
-  rootHandle: FileSystemDirectoryHandle | null;
+  rootPath: string | null;
   models: PrintModel[];
   lastScan: number | null;
   availableTags: string[];

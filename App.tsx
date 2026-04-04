@@ -1,56 +1,53 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { PrintModel, ViewMode } from './types';
-import { loadModels, getRootHandle, saveModels } from './services/storage';
+import { electronStorage } from './services/electronStorage';
 import { suggestTags } from './services/geminiService';
 import { useLibrary } from './hooks/useLibrary';
 import ModelCard from './components/ModelCard';
 import Sidebar from './components/Sidebar';
 import SearchHeader from './components/SearchHeader';
 import ModelDetailModal from './components/ModelDetailModal';
+import SettingsModal from './components/SettingsModal';
 
 const App: React.FC = () => {
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [initialModels, setInitialModels] = useState<PrintModel[]>([]);
-  const [initialRoot, setInitialRoot] = useState<FileSystemDirectoryHandle | null>(null);
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTags, setActiveTags] = useState<string[]>([]);
-  const [selectedModel, setSelectedModel] = useState<PrintModel | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.GRID);
+  const [initialRootPath, setInitialRootPath] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
-      const storedHandle = await getRootHandle();
-      const storedModels = await loadModels();
-      if (storedHandle) setInitialRoot(storedHandle);
-      if (storedModels) setInitialModels(storedModels);
+      const savedModels = await electronStorage.loadModels();
+      const savedRootPath = await electronStorage.getRootPath();
+      if (savedModels) setInitialModels(savedModels);
+      if (savedRootPath) setInitialRootPath(savedRootPath);
       setInitialLoadDone(true);
     };
     init();
   }, []);
 
   if (!initialLoadDone) {
-    return null; // Or a loading spinner
+    return null;
   }
 
-  return <AppContent initialModels={initialModels} initialRootHandle={initialRoot} />;
+  return <AppContent initialModels={initialModels} initialRootPath={initialRootPath} />;
 };
 
-const AppContent: React.FC<{ initialModels: PrintModel[], initialRootHandle: FileSystemDirectoryHandle | null }> = ({ initialModels, initialRootHandle }) => {
+const AppContent: React.FC<{ initialModels: PrintModel[], initialRootPath: string | null }> = ({ initialModels, initialRootPath }) => {
   const {
     models,
     setModels,
-    rootHandle,
+    rootPath,
     isScanning,
     handlePickDirectory,
     scanDirectory
-  } = useLibrary(initialModels, initialRootHandle);
+  } = useLibrary(initialModels, initialRootPath);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState<PrintModel | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.GRID);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -86,8 +83,7 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootHandle: Fil
         m.id === modelId ? { ...m, tags: Array.from(new Set([...m.tags, ...suggested])) } : m
       );
       setModels(updatedModels);
-      await saveModels(updatedModels);
-      // Update selected model view
+      await electronStorage.saveModels(updatedModels);
       if (selectedModel?.id === modelId) {
         setSelectedModel(prev => prev ? { ...prev, tags: Array.from(new Set([...prev.tags, ...suggested])) } : null);
       }
@@ -100,7 +96,7 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootHandle: Fil
     setSelectedModel(updated);
     const updatedModels = models.map(m => m.id === modelId ? updated : m);
     setModels(updatedModels);
-    await saveModels(updatedModels);
+    await electronStorage.saveModels(updatedModels);
   };
 
   const addTag = async (modelId: string, tag: string) => {
@@ -109,13 +105,13 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootHandle: Fil
     setSelectedModel(updated);
     const updatedModels = models.map(m => m.id === modelId ? updated : m);
     setModels(updatedModels);
-    await saveModels(updatedModels);
+    await electronStorage.saveModels(updatedModels);
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
       <Sidebar 
-        rootHandle={rootHandle}
+        rootPath={rootPath}
         modelsLength={models.length}
         filteredModelsLength={filteredModels.length}
         allTags={allTags}
@@ -128,15 +124,16 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootHandle: Fil
         <SearchHeader 
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          rootHandle={rootHandle}
+          rootPath={rootPath}
           isScanning={isScanning}
-          onRefresh={() => rootHandle && scanDirectory(rootHandle)}
+          onRefresh={() => rootPath && scanDirectory(rootPath)}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
 
         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          {!rootHandle && (
+          {!rootPath && (
             <div className="h-full flex flex-col items-center justify-center text-center">
               <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center mb-6 border border-slate-800">
                 <svg className="w-12 h-12 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,7 +153,7 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootHandle: Fil
             </div>
           )}
 
-          {rootHandle && filteredModels.length === 0 && (
+          {rootPath && filteredModels.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
               <svg className="w-16 h-16 text-slate-700 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -165,7 +162,7 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootHandle: Fil
             </div>
           )}
 
-          {rootHandle && filteredModels.length > 0 && (
+          {rootPath && filteredModels.length > 0 && (
             <div className={`grid gap-6 ${viewMode === ViewMode.GRID ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5' : 'grid-cols-1'}`}>
               {filteredModels.map(model => (
                 <ModelCard 
@@ -189,6 +186,12 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootHandle: Fil
           onAddTag={addTag}
         />
       )}
+
+      <SettingsModal 
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onSave={() => setSettingsOpen(false)}
+      />
     </div>
   );
 };

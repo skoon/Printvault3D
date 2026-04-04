@@ -4,21 +4,23 @@ import { ViewMode } from '../types';
 interface SearchHeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  rootHandle: FileSystemDirectoryHandle | null;
+  rootPath: string | null;
   isScanning: boolean;
   onRefresh: () => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
+  onOpenSettings: () => void;
 }
 
 const SearchHeader: React.FC<SearchHeaderProps> = ({
   searchQuery,
   onSearchChange,
-  rootHandle,
+  rootPath,
   isScanning,
   onRefresh,
   viewMode,
-  onViewModeChange
+  onViewModeChange,
+  onOpenSettings
 }) => {
   return (
     <header className="h-20 bg-slate-950/50 border-b border-slate-800 flex items-center px-8 gap-6 backdrop-blur-md sticky top-0 z-10">
@@ -40,7 +42,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
       <div className="flex items-center gap-2">
         <button 
           onClick={onRefresh}
-          disabled={isScanning || !rootHandle}
+          disabled={isScanning || !rootPath}
           className={`p-2 rounded-lg transition-all ${isScanning ? 'animate-spin' : 'hover:bg-slate-800 text-slate-400 hover:text-white'}`}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,6 +64,16 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <div className="h-6 w-px bg-slate-800 mx-2" />
+        <button 
+          onClick={onOpenSettings}
+          className="p-2 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
       </div>

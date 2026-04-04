@@ -2,7 +2,7 @@ import React from 'react';
 import TagBadge from './TagBadge';
 
 interface SidebarProps {
-  rootHandle: FileSystemDirectoryHandle | null;
+  rootPath: string | null;
   modelsLength: number;
   filteredModelsLength: number;
   allTags: string[];
@@ -12,7 +12,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
-  rootHandle,
+  rootPath,
   modelsLength,
   filteredModelsLength,
   allTags,
@@ -39,7 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
-          {rootHandle ? 'Change Directory' : 'Choose Directory'}
+          {rootPath ? 'Change Directory' : 'Choose Directory'}
         </button>
 
         <div className="mb-6 flex flex-col min-h-0 relative h-[calc(100vh-250px)]">
