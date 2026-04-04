@@ -1,9 +1,11 @@
 import React from 'react';
 import { PrintModel } from '../types';
 import TagBadge from './TagBadge';
+import STLViewer from './STLViewer';
 
 interface ModelDetailModalProps {
   model: PrintModel;
+  rootPath: string;
   onClose: () => void;
   onGenerateAITags: (modelId: string) => void;
   onRemoveTag: (modelId: string, tag: string) => void;
@@ -12,11 +14,14 @@ interface ModelDetailModalProps {
 
 const ModelDetailModal: React.FC<ModelDetailModalProps> = ({
   model,
+  rootPath,
   onClose,
   onGenerateAITags,
   onRemoveTag,
   onAddTag
 }) => {
+  const isSTL = model.extension.toLowerCase() === '.stl';
+  const fullPath = rootPath ? `${rootPath}/${model.path}` : model.path;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -43,7 +48,7 @@ const ModelDetailModal: React.FC<ModelDetailModalProps> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto p-8">
-          <div className="grid grid-cols-2 gap-8 mb-8">
+          <div className="grid grid-cols-3 gap-8 mb-8">
             <div className="space-y-4">
               <div>
                 <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Properties</h3>
@@ -78,6 +83,19 @@ const ModelDetailModal: React.FC<ModelDetailModalProps> = ({
                <p className="text-[10px] text-slate-500 leading-relaxed italic">
                  Uses Gemini to analyze the filename and suggest categories like "Cosplay", "Tools", or "Decor".
                </p>
+            </div>
+
+            <div>
+              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Preview</h3>
+              {isSTL ? (
+                <div className="h-full min-h-[280px]">
+                  <STLViewer key={fullPath} filePath={fullPath} />
+                </div>
+              ) : (
+                <div className="h-full min-h-[280px] bg-slate-800 rounded-lg flex items-center justify-center">
+                  <span className="text-xs text-slate-500">3D preview not available for {model.extension.toUpperCase()} files</span>
+                </div>
+              )}
             </div>
           </div>
 

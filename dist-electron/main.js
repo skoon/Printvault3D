@@ -140,3 +140,7 @@ ipcMain.handle("save-api-key", async (_event, key) => {
 ipcMain.handle("get-api-key", async () => {
   return storage.getApiKey();
 });
+ipcMain.handle("read-file", async (_event, filePath) => {
+  const buffer = await fs.readFile(filePath);
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+});

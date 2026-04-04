@@ -137,3 +137,9 @@ ipcMain.handle('save-api-key', async (_event, key: string) => {
 ipcMain.handle('get-api-key', async () => {
   return storage.getApiKey();
 });
+
+// IPC: Read file as ArrayBuffer
+ipcMain.handle('read-file', async (_event, filePath: string) => {
+  const buffer = await fs.readFile(filePath);
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+});

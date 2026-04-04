@@ -16,10 +16,12 @@
     "@google/genai": "^1.38.0",
     "glob": "^13.0.6",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "three": "^0.183.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@types/three": "^0.183.1",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.27",
     "electron": "^41.1.1",

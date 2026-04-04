@@ -180,6 +180,7 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootPath: strin
       {selectedModel && (
         <ModelDetailModal 
           model={selectedModel}
+          rootPath={rootPath}
           onClose={() => setSelectedModel(null)}
           onGenerateAITags={generateAITags}
           onRemoveTag={removeTag}

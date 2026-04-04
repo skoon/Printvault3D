@@ -8,5 +8,6 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   saveRootPath: (path) => electron.ipcRenderer.invoke("save-root-path", path),
   getRootPath: () => electron.ipcRenderer.invoke("get-root-path"),
   saveApiKey: (key) => electron.ipcRenderer.invoke("save-api-key", key),
-  getApiKey: () => electron.ipcRenderer.invoke("get-api-key")
+  getApiKey: () => electron.ipcRenderer.invoke("get-api-key"),
+  readFile: (filePath) => electron.ipcRenderer.invoke("read-file", filePath)
 });

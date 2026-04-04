@@ -7,6 +7,7 @@ export interface ElectronAPI {
   getRootPath: () => Promise<string | null>;
   saveApiKey: (key: string) => Promise<void>;
   getApiKey: () => Promise<string>;
+  readFile: (filePath: string) => Promise<ArrayBuffer>;
 }
 
 export interface PrintModelData {
@@ -68,5 +69,10 @@ export const electronStorage = {
   async getApiKey(): Promise<string> {
     if (!isElectron()) return '';
     return window.electronAPI!.getApiKey();
+  },
+
+  async readFile(filePath: string): Promise<ArrayBuffer | null> {
+    if (!isElectron()) return null;
+    return window.electronAPI!.readFile(filePath);
   },
 };

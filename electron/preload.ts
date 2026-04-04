@@ -9,4 +9,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getRootPath: () => ipcRenderer.invoke('get-root-path'),
   saveApiKey: (key: string) => ipcRenderer.invoke('save-api-key', key),
   getApiKey: () => ipcRenderer.invoke('get-api-key'),
+  readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
 });
