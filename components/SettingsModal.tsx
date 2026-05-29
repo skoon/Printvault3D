@@ -5,9 +5,11 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
+  rootPath?: string | null;
+  onChangeDirectory?: () => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSave }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSave, rootPath, onChangeDirectory }) => {
   const [apiKey, setApiKey] = useState('');
   const [saved, setSaved] = useState(false);
 
@@ -44,8 +46,30 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSave }
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              3D Objects Library Path
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-400 truncate">
+                {rootPath || 'No directory selected'}
+              </div>
+              {onChangeDirectory && (
+                <button
+                  onClick={onChangeDirectory}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 transition-all shrink-0"
+                >
+                  {rootPath ? 'Change' : 'Select'}
+                </button>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              Directory containing your STL, OBJ, and 3MF files.
+            </p>
+          </div>
+
+          <div className="border-t border-slate-800 pt-4">
             <label className="block text-sm font-medium text-slate-300 mb-2">
               Gemini API Key
             </label>

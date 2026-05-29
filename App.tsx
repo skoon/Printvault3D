@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { PrintModel, ViewMode } from './types';
-import { electronStorage } from './services/electronStorage';
+import { electronStorage, isElectron } from './services/electronStorage';
+import { restoreWebHandle } from './services/webStorage';
 import { suggestTags } from './services/geminiService';
 import { useLibrary } from './hooks/useLibrary';
 import ModelCard from './components/ModelCard';
@@ -17,6 +18,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const init = async () => {
+      if (!isElectron()) {
+        await restoreWebHandle();
+      }
       const savedModels = await electronStorage.loadModels();
       const savedRootPath = await electronStorage.getRootPath();
       if (savedModels) setInitialModels(savedModels);
@@ -192,6 +196,8 @@ const AppContent: React.FC<{ initialModels: PrintModel[], initialRootPath: strin
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         onSave={() => setSettingsOpen(false)}
+        rootPath={rootPath}
+        onChangeDirectory={handlePickDirectory}
       />
     </div>
   );

@@ -6,6 +6,7 @@ import renderer from 'vite-plugin-electron-renderer';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
+    const isWebOnly = env.VITE_WEB_ONLY === 'true';
     return {
       server: {
         port: 3000,
@@ -13,35 +14,37 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [
         react(),
-        electron([
-          {
-            entry: 'electron/main.ts',
-            vite: {
-              build: {
-                outDir: 'dist-electron',
-              },
-            },
-          },
-          {
-            entry: 'electron/preload.ts',
-            onstart(options) {
-              options.reload();
-            },
-            vite: {
-              build: {
-                outDir: 'dist-electron',
-                lib: {
-                  entry: 'electron/preload.ts',
-                  formats: ['cjs'],
-                },
-                rollupOptions: {
-                  external: ['electron'],
+        ...(isWebOnly ? [] : [
+          electron([
+            {
+              entry: 'electron/main.ts',
+              vite: {
+                build: {
+                  outDir: 'dist-electron',
                 },
               },
             },
-          },
+            {
+              entry: 'electron/preload.ts',
+              onstart(options) {
+                options.reload();
+              },
+              vite: {
+                build: {
+                  outDir: 'dist-electron',
+                  lib: {
+                    entry: 'electron/preload.ts',
+                    formats: ['cjs'],
+                  },
+                  rollupOptions: {
+                    external: ['electron'],
+                  },
+                },
+              },
+            },
+          ]),
+          renderer(),
         ]),
-        renderer(),
       ],
       base: './',
       define: {
