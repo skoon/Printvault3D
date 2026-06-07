@@ -1,15 +1,1 @@
-import { contextBridge, ipcRenderer } from "electron";
-contextBridge.exposeInMainWorld("electronAPI", {
-  pickDirectory: () => ipcRenderer.invoke("pick-directory"),
-  scanDirectory: (path) => ipcRenderer.invoke("scan-directory", path),
-  saveModels: (models) => ipcRenderer.invoke("save-models", models),
-  loadModels: () => ipcRenderer.invoke("load-models"),
-  saveRootPath: (path) => ipcRenderer.invoke("save-root-path", path),
-  getRootPath: () => ipcRenderer.invoke("get-root-path"),
-  saveApiKey: (key) => ipcRenderer.invoke("save-api-key", key),
-  getApiKey: () => ipcRenderer.invoke("get-api-key"),
-  readFile: (filePath) => ipcRenderer.invoke("read-file", filePath)
-});
-ey"),
-  readFile: (filePath) => electron.ipcRenderer.invoke("read-file", filePath)
-});
+"use strict";const e=require("electron");e.contextBridge.exposeInMainWorld("electronAPI",{pickDirectory:()=>e.ipcRenderer.invoke("pick-directory"),scanDirectory:r=>e.ipcRenderer.invoke("scan-directory",r),saveModels:r=>e.ipcRenderer.invoke("save-models",r),loadModels:()=>e.ipcRenderer.invoke("load-models"),saveRootPath:r=>e.ipcRenderer.invoke("save-root-path",r),getRootPath:()=>e.ipcRenderer.invoke("get-root-path"),saveApiKey:r=>e.ipcRenderer.invoke("save-api-key",r),getApiKey:()=>e.ipcRenderer.invoke("get-api-key"),readFile:r=>e.ipcRenderer.invoke("read-file",r)});
