@@ -5,7 +5,6 @@ import STLViewer from './STLViewer';
 
 interface ModelDetailModalProps {
   model: PrintModel;
-  rootPath: string;
   onClose: () => void;
   onGenerateAITags: (modelId: string) => void;
   onRemoveTag: (modelId: string, tag: string) => void;
@@ -14,14 +13,12 @@ interface ModelDetailModalProps {
 
 const ModelDetailModal: React.FC<ModelDetailModalProps> = ({
   model,
-  rootPath,
   onClose,
   onGenerateAITags,
   onRemoveTag,
   onAddTag
 }) => {
   const isSTL = model.extension.toLowerCase() === '.stl';
-  const fullPath = rootPath ? `${rootPath}/${model.path}` : model.path;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -81,7 +78,7 @@ const ModelDetailModal: React.FC<ModelDetailModalProps> = ({
               <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Preview</h3>
               {isSTL ? (
                 <div className="h-full min-h-[300px]">
-                  <STLViewer key={fullPath} filePath={fullPath} />
+                  <STLViewer key={model.id} directoryId={model.directoryId} filePath={model.path} />
                 </div>
               ) : (
                 <div className="h-full min-h-[300px] bg-slate-800 rounded-lg flex items-center justify-center">

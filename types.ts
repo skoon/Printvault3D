@@ -1,6 +1,13 @@
 
+export interface LibraryDirectory {
+  id: string;
+  path: string;
+  label: string;
+}
+
 export interface PrintModel {
   id: string;
+  directoryId: string;
   name: string;
   path: string;
   extension: string;
@@ -12,7 +19,7 @@ export interface PrintModel {
 }
 
 export interface LibraryState {
-  rootPath: string | null;
+  directories: LibraryDirectory[];
   models: PrintModel[];
   lastScan: number | null;
   availableTags: string[];

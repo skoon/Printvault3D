@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 release
 dist-electron
+
+# Server runtime state and stray tarballs
+data
+*.tgz

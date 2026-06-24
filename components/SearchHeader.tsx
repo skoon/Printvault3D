@@ -4,7 +4,7 @@ import { ViewMode } from '../types';
 interface SearchHeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  rootPath: string | null;
+  canRefresh: boolean;
   isScanning: boolean;
   onRefresh: () => void;
   viewMode: ViewMode;
@@ -15,7 +15,7 @@ interface SearchHeaderProps {
 const SearchHeader: React.FC<SearchHeaderProps> = ({
   searchQuery,
   onSearchChange,
-  rootPath,
+  canRefresh,
   isScanning,
   onRefresh,
   viewMode,
@@ -42,7 +42,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
       <div className="flex items-center gap-2">
         <button 
           onClick={onRefresh}
-          disabled={isScanning || !rootPath}
+          disabled={isScanning || !canRefresh}
           className={`p-2 rounded-lg transition-all ${isScanning ? 'animate-spin' : 'hover:bg-slate-800 text-slate-400 hover:text-white'}`}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

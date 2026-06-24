@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-electron
+release
+data
+*.tgz
+.git
+.gitignore
+*.log
+.DS_Store

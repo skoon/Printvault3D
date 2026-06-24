@@ -1,0 +1,21 @@
+services:
+  printvault3d:
+    build: .
+    image: printvault3d
+    ports:
+      - "8787:8787"
+    environment:
+      # Comma-separated absolute paths *inside the container* to auto-register
+      # on first boot. Map your host model folders to these via volumes below.
+      PVAULT_LIBRARIES: "/libraries/models"
+      # Optional: enables AI tag suggestions (proxied server-side, never exposed).
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+    volumes:
+      # Mount your host 3D-model library (read-only is fine) into the container.
+      - "./models:/libraries/models:ro"
+      # Persist app state (directory list, tags) across restarts.
+      - "printvault-data:/data"
+    restart: unless-stopped
+
+volumes:
+  printvault-data:

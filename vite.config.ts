@@ -11,6 +11,13 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        // Web dev mode (VITE_WEB_ONLY=true): proxy API calls to the Express server.
+        proxy: {
+          '/api': {
+            target: `http://localhost:${env.PVAULT_PORT || 8787}`,
+            changeOrigin: true,
+          },
+        },
       },
       plugins: [
         react(),

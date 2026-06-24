@@ -1,25 +1,16 @@
+import { LibraryDirectory, PrintModel } from '../types';
+import { httpStorage } from './httpStorage';
+
 export interface ElectronAPI {
-  pickDirectory: () => Promise<string | null>;
-  scanDirectory: (path: string) => Promise<PrintModelData[]>;
-  saveModels: (models: PrintModelData[]) => Promise<void>;
-  loadModels: () => Promise<PrintModelData[]>;
-  saveRootPath: (path: string) => Promise<void>;
-  getRootPath: () => Promise<string | null>;
+  listDirectories: () => Promise<LibraryDirectory[]>;
+  addDirectory: () => Promise<LibraryDirectory | null>;
+  removeDirectory: (id: string) => Promise<void>;
+  scanDirectories: () => Promise<PrintModel[]>;
+  saveModels: (models: PrintModel[]) => Promise<void>;
+  loadModels: () => Promise<PrintModel[]>;
   saveApiKey: (key: string) => Promise<void>;
   getApiKey: () => Promise<string>;
-  readFile: (filePath: string) => Promise<ArrayBuffer>;
-}
-
-export interface PrintModelData {
-  id: string;
-  name: string;
-  path: string;
-  extension: string;
-  size: number;
-  lastModified: number;
-  tags: string[];
-  directoryTags: string[];
-  description?: string;
+  readFile: (dirId: string, relPath: string) => Promise<ArrayBuffer>;
 }
 
 declare global {
@@ -30,51 +21,50 @@ declare global {
 
 export const isElectron = () => typeof window !== 'undefined' && !!window.electronAPI;
 
-import { webStorage } from './webStorage';
-
 export const electronStorage = {
-  async pickDirectory(): Promise<string | null> {
-    if (isElectron()) return window.electronAPI!.pickDirectory();
-    return webStorage.pickDirectory();
+  async listDirectories(): Promise<LibraryDirectory[]> {
+    if (isElectron()) return window.electronAPI!.listDirectories();
+    return httpStorage.listDirectories();
   },
 
-  async scanDirectory(dirPath: string): Promise<PrintModelData[]> {
-    if (isElectron()) return window.electronAPI!.scanDirectory(dirPath);
-    return webStorage.scanDirectory(dirPath);
+  // Electron opens a native picker (arg ignored); web requires a path string.
+  async addDirectory(dirPath?: string): Promise<LibraryDirectory | null> {
+    if (isElectron()) return window.electronAPI!.addDirectory();
+    return httpStorage.addDirectory(dirPath);
   },
 
-  async saveModels(models: PrintModelData[]): Promise<void> {
+  async removeDirectory(id: string): Promise<void> {
+    if (isElectron()) return window.electronAPI!.removeDirectory(id);
+    return httpStorage.removeDirectory(id);
+  },
+
+  async scanDirectories(): Promise<PrintModel[]> {
+    if (isElectron()) return window.electronAPI!.scanDirectories();
+    return httpStorage.scanDirectories();
+  },
+
+  async saveModels(models: PrintModel[]): Promise<void> {
     if (isElectron()) return window.electronAPI!.saveModels(models);
-    return webStorage.saveModels(models);
+    return httpStorage.saveModels(models);
   },
 
-  async loadModels(): Promise<PrintModelData[]> {
+  async loadModels(): Promise<PrintModel[]> {
     if (isElectron()) return window.electronAPI!.loadModels();
-    return webStorage.loadModels();
-  },
-
-  async saveRootPath(path: string): Promise<void> {
-    if (isElectron()) return window.electronAPI!.saveRootPath(path);
-    return webStorage.saveRootPath(path);
-  },
-
-  async getRootPath(): Promise<string | null> {
-    if (isElectron()) return window.electronAPI!.getRootPath();
-    return webStorage.getRootPath();
+    return httpStorage.loadModels();
   },
 
   async saveApiKey(key: string): Promise<void> {
     if (isElectron()) return window.electronAPI!.saveApiKey(key);
-    return webStorage.saveApiKey(key);
+    return httpStorage.saveApiKey(key);
   },
 
   async getApiKey(): Promise<string> {
     if (isElectron()) return window.electronAPI!.getApiKey();
-    return webStorage.getApiKey();
+    return httpStorage.getApiKey();
   },
 
-  async readFile(filePath: string): Promise<ArrayBuffer | null> {
-    if (isElectron()) return window.electronAPI!.readFile(filePath);
-    return webStorage.readFile(filePath);
+  async readFile(dirId: string, relPath: string): Promise<ArrayBuffer | null> {
+    if (isElectron()) return window.electronAPI!.readFile(dirId, relPath);
+    return httpStorage.readFile(dirId, relPath);
   },
 };

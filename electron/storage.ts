@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 
 interface PrintModel {
   id: string;
+  directoryId: string;
   name: string;
   path: string;
   extension: string;
@@ -14,15 +15,21 @@ interface PrintModel {
   description?: string;
 }
 
+interface LibraryDirectory {
+  id: string;
+  path: string;
+  label: string;
+}
+
 interface AppState {
   models: PrintModel[];
-  rootPath: string | null;
+  directories: LibraryDirectory[];
   apiKey: string;
 }
 
 const DEFAULT_STATE: AppState = {
   models: [],
-  rootPath: null,
+  directories: [],
   apiKey: '',
 };
 
@@ -38,7 +45,7 @@ class Storage {
   async init() {
     try {
       const data = await fs.readFile(this.statePath, 'utf-8');
-      this.state = JSON.parse(data);
+      this.state = { ...DEFAULT_STATE, ...JSON.parse(data) };
     } catch {
       await this.save();
     }
@@ -57,13 +64,25 @@ class Storage {
     return this.state.models;
   }
 
-  async saveRootPath(dirPath: string) {
-    this.state.rootPath = dirPath;
-    await this.save();
+  getDirectories(): LibraryDirectory[] {
+    return this.state.directories;
   }
 
-  async getRootPath(): Promise<string | null> {
-    return this.state.rootPath;
+  getDirectory(id: string): LibraryDirectory | undefined {
+    return this.state.directories.find((d) => d.id === id);
+  }
+
+  async addDirectory(dir: LibraryDirectory) {
+    if (!this.state.directories.some((d) => path.resolve(d.path) === path.resolve(dir.path))) {
+      this.state.directories.push(dir);
+      await this.save();
+    }
+  }
+
+  async removeDirectory(id: string) {
+    this.state.directories = this.state.directories.filter((d) => d.id !== id);
+    this.state.models = this.state.models.filter((m) => m.directoryId !== id);
+    await this.save();
   }
 
   async saveApiKey(key: string) {

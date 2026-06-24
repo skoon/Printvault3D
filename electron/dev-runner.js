@@ -1,10 +1,12 @@
 import { spawn } from 'child_process';
 import path from 'path';
 import http from 'http';
+import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
+const require = createRequire(import.meta.url);
 
 function waitForPort(port, timeout = 30000) {
   return new Promise((resolve, reject) => {
@@ -48,7 +50,9 @@ async function main() {
     await waitForPort(3000);
     console.log('Vite dev server ready, starting Electron...');
 
-    const electronBin = path.join(rootDir, 'node_modules', 'electron', 'dist', 'electron.exe');
+    // The `electron` package exports the absolute path to its binary for the
+    // current platform (electron.exe on Windows, Electron on macOS/Linux).
+    const electronBin = require('electron');
 
     const electron = spawn(electronBin, ['.'], {
       stdio: 'inherit',

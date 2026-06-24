@@ -5,10 +5,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { electronStorage } from '../services/electronStorage';
 
 interface STLViewerProps {
+  directoryId: string;
   filePath: string;
 }
 
-const STLViewer: React.FC<STLViewerProps> = ({ filePath }) => {
+const STLViewer: React.FC<STLViewerProps> = ({ directoryId, filePath }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -86,7 +87,7 @@ const STLViewer: React.FC<STLViewerProps> = ({ filePath }) => {
           setLoading(true);
           setError(null);
 
-          const buffer = await electronStorage.readFile(filePath);
+          const buffer = await electronStorage.readFile(directoryId, filePath);
           
           if (!buffer) {
             setError('Failed to read file');
@@ -178,7 +179,7 @@ const STLViewer: React.FC<STLViewerProps> = ({ filePath }) => {
 
     const cleanup = initScene();
     return cleanup;
-  }, [filePath]);
+  }, [directoryId, filePath]);
 
   return (
     <div ref={containerRef} className="w-full h-full min-h-[300px] relative rounded-lg overflow-hidden">

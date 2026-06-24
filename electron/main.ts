@@ -2,7 +2,9 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import crypto from 'crypto';
 import { storage } from './storage';
+import { scanDirectories, mergeModels, resolveWithinRoot } from '../shared/fileScan.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,8 +34,8 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(() => {
-  storage.init();
+app.whenReady().then(async () => {
+  await storage.init();
   createWindow();
 
   app.on('activate', () => {
@@ -49,63 +51,40 @@ app.on('window-all-closed', () => {
   }
 });
 
-// IPC: Pick directory
-ipcMain.handle('pick-directory', async () => {
+// IPC: List configured directories
+ipcMain.handle('list-directories', async () => {
+  return storage.getDirectories();
+});
+
+// IPC: Add a directory (native picker)
+ipcMain.handle('add-directory', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openDirectory'],
   });
-
   if (result.canceled || result.filePaths.length === 0) {
     return null;
   }
-
-  return result.filePaths[0];
+  const dirPath = result.filePaths[0];
+  const dir = {
+    id: crypto.randomUUID(),
+    path: dirPath,
+    label: path.basename(dirPath) || dirPath,
+  };
+  await storage.addDirectory(dir);
+  return dir;
 });
 
-// IPC: Scan directory
-ipcMain.handle('scan-directory', async (_event, dirPath: string) => {
-  const ALLOWED_EXTENSIONS = ['.stl', '.obj', '.3mf'];
-  const models: Array<{
-    id: string;
-    name: string;
-    path: string;
-    extension: string;
-    size: number;
-    lastModified: number;
-    tags: string[];
-    directoryTags: string[];
-    description?: string;
-  }> = [];
+// IPC: Remove a directory
+ipcMain.handle('remove-directory', async (_event, id: string) => {
+  await storage.removeDirectory(id);
+});
 
-  async function walk(dir: string, currentPath: string = '', dirTags: string[] = []) {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-
-      if (entry.isFile()) {
-        const ext = path.extname(entry.name).toLowerCase();
-        if (ALLOWED_EXTENSIONS.includes(ext)) {
-          const stat = await fs.stat(fullPath);
-          models.push({
-            id: crypto.randomUUID(),
-            name: entry.name,
-            path: `${currentPath}/${entry.name}`,
-            extension: ext,
-            size: stat.size,
-            lastModified: stat.mtimeMs,
-            tags: [],
-            directoryTags: dirTags,
-          });
-        }
-      } else if (entry.isDirectory()) {
-        await walk(fullPath, `${currentPath}/${entry.name}`, [...dirTags, entry.name]);
-      }
-    }
-  }
-
-  await walk(dirPath);
-  return models;
+// IPC: Scan all configured directories (merge to preserve user tags)
+ipcMain.handle('scan-directories', async () => {
+  const scanned = await scanDirectories(storage.getDirectories());
+  const merged = mergeModels(await storage.loadModels(), scanned);
+  await storage.saveModels(merged);
+  return merged;
 });
 
 // IPC: Save models
@@ -118,16 +97,6 @@ ipcMain.handle('load-models', async () => {
   return storage.loadModels();
 });
 
-// IPC: Save root path
-ipcMain.handle('save-root-path', async (_event, dirPath: string) => {
-  return storage.saveRootPath(dirPath);
-});
-
-// IPC: Get root path
-ipcMain.handle('get-root-path', async () => {
-  return storage.getRootPath();
-});
-
 // IPC: Save API key
 ipcMain.handle('save-api-key', async (_event, key: string) => {
   return storage.saveApiKey(key);
@@ -138,8 +107,11 @@ ipcMain.handle('get-api-key', async () => {
   return storage.getApiKey();
 });
 
-// IPC: Read file as ArrayBuffer
-ipcMain.handle('read-file', async (_event, filePath: string) => {
-  const buffer = await fs.readFile(filePath);
+// IPC: Read a model file as ArrayBuffer (resolved within its directory root)
+ipcMain.handle('read-file', async (_event, dirId: string, relPath: string) => {
+  const dir = storage.getDirectory(dirId);
+  if (!dir) throw new Error('Unknown directory');
+  const abs = resolveWithinRoot(dir.path, relPath);
+  const buffer = await fs.readFile(abs);
   return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 });
